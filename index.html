@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vishwakarma Mitra — PM Vishwakarma AI Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --saffron:     #FF6B00;
+    --saffron-lt:  #FFF3E8;
+    --green:       #138808;
+    --green-lt:    #E8F5E9;
+    --navy:        #0B2447;
+    --navy-mid:    #19376D;
+    --white:       #FFFFFF;
+    --cream:       #FDFAF5;
+    --border:      #E2D9CC;
+    --muted:       #7A7065;
+    --bubble-ai:   #F0F4FF;
+    --bubble-user: #0B2447;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+    background: var(--cream);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── TOP HEADER ── */
+  .header {
+    background: var(--navy);
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+
+  .header-logo {
+    width: 44px; height: 44px;
+    background: var(--saffron);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .header-title { font-size: 16px; font-weight: 700; line-height: 1.2; }
+  .header-sub   { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 2px; }
+
+  .header-badge {
+    margin-left: auto;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.8);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* ── LANG SELECTOR BAR ── */
+  .lang-bar {
+    background: var(--navy-mid);
+    padding: 8px 16px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    overflow-x: auto;
+    flex-shrink: 0;
+    scrollbar-width: none;
+  }
+  .lang-bar::-webkit-scrollbar { display: none; }
+
+  .lang-label { font-size: 10px; color: rgba(255,255,255,0.5); margin-right: 4px; white-space: nowrap; }
+
+  .lang-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.8);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .lang-btn:hover, .lang-btn.active {
+    background: var(--saffron);
+    border-color: var(--saffron);
+    color: white;
+  }
+
+  /* ── TRADE SELECTOR ── */
+  .trade-bar {
+    background: var(--saffron-lt);
+    border-bottom: 1px solid #FFD4AD;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .trade-label { font-size: 11px; color: var(--saffron); font-weight: 600; white-space: nowrap; }
+
+  .trade-select {
+    font-size: 12px;
+    border: 1px solid #FFB37A;
+    border-radius: 6px;
+    padding: 5px 10px;
+    background: white;
+    color: var(--navy);
+    cursor: pointer;
+    font-family: inherit;
+    flex: 1;
+    min-width: 180px;
+    max-width: 300px;
+  }
+
+  /* ── MAIN CHAT AREA ── */
+  .chat-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    scroll-behavior: smooth;
+  }
+
+  /* ── WELCOME CARD ── */
+  .welcome-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    margin: 0 auto;
+    max-width: 480px;
+    width: 100%;
+  }
+
+  .welcome-icon { font-size: 42px; margin-bottom: 10px; }
+  .welcome-title { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .welcome-sub { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; }
+
+  .quick-prompts { display: flex; flex-direction: column; gap: 8px; }
+  .quick-btn {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    color: var(--navy);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .quick-btn:hover { background: var(--saffron-lt); border-color: var(--saffron); color: var(--saffron); }
+
+  /* ── MESSAGE BUBBLES ── */
+  .msg-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    max-width: 88%;
+    animation: fadeUp 0.25s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-row.user  { align-self: flex-end; flex-direction: row-reverse; }
+  .msg-row.agent { align-self: flex-start; }
+
+  .msg-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .agent .msg-avatar { background: var(--navy); }
+  .user  .msg-avatar { background: var(--saffron); }
+
+  .msg-bubble {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.65;
+    max-width: 100%;
+    word-break: break-word;
+  }
+
+  .agent .msg-bubble {
+    background: white;
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+    color: var(--navy);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .user .msg-bubble {
+    background: var(--navy);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .msg-time {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+    padding: 0 4px;
+  }
+  .user .msg-time { text-align: right; }
+
+  /* ── TYPING INDICATOR ── */
+  .typing {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 14px 16px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+    width: fit-content;
+  }
+
+  .typing-dot {
+    width: 7px; height: 7px;
+    background: var(--saffron);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30%            { transform: translateY(-6px); }
+  }
+
+  /* ── INPUT AREA ── */
+  .input-wrap {
+    background: white;
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    flex-shrink: 0;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .input-box {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    min-height: 48px;
+    max-height: 120px;
+    line-height: 1.5;
+    transition: border-color 0.15s;
+    color: var(--navy);
+  }
+  .input-box:focus { border-color: var(--saffron); }
+  .input-box::placeholder { color: var(--muted); }
+
+  .mic-btn, .send-btn {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .mic-btn { background: var(--green-lt); color: var(--green); border: 1.5px solid #A8D5B0; }
+  .mic-btn:hover { background: var(--green); color: white; }
+  .mic-btn.listening { background: var(--green); color: white; animation: pulse 1s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(19,136,8,0.4); }
+    50%       { box-shadow: 0 0 0 8px rgba(19,136,8,0); }
+  }
+
+  .send-btn { background: var(--saffron); color: white; }
+  .send-btn:hover { background: #CC5500; }
+  .send-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+  .input-hint {
+    text-align: center;
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ── API STATUS BAR ── */
+  .status-bar {
+    background: #FFF3CD;
+    border-top: 1px solid #FFE082;
+    padding: 6px 16px;
+    font-size: 11px;
+    color: #7A5700;
+    text-align: center;
+    display: none;
+  }
+  .status-bar.show { display: block; }
+
+  /* ── SCROLLBAR ── */
+  .chat-wrap::-webkit-scrollbar { width: 4px; }
+  .chat-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .header-badge { display: none; }
+    .msg-row { max-width: 95%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">🔨</div>
+  <div>
+    <div class="header-title">Vishwakarma Mitra</div>
+    <div class="header-sub">PM Vishwakarma AI Agent · Ministry of MSME</div>
+  </div>
+  <div class="header-badge">🇮🇳 ACU · IndiaAI Mission</div>
+</div>
+
+<!-- LANGUAGE SELECTOR -->
+<div class="lang-bar">
+  <span class="lang-label">🌐 Language:</span>
+  <button class="lang-btn active" onclick="setLang('auto', this)">Auto Detect</button>
+  <button class="lang-btn" onclick="setLang('hindi', this)">हिंदी</button>
+  <button class="lang-btn" onclick="setLang('english', this)">English</button>
+  <button class="lang-btn" onclick="setLang('marathi', this)">मराठी</button>
+  <button class="lang-btn" onclick="setLang('tamil', this)">தமிழ்</button>
+  <button class="lang-btn" onclick="setLang('telugu', this)">తెలుగు</button>
+  <button class="lang-btn" onclick="setLang('gujarati', this)">ગુજરાતી</button>
+  <button class="lang-btn" onclick="setLang('bengali', this)">বাংলা</button>
+</div>
+
+<!-- TRADE SELECTOR -->
+<div class="trade-bar">
+  <span class="trade-label">🛠️ Aapka Kaam:</span>
+  <select class="trade-select" id="tradeSelect">
+    <option value="">-- Apna trade chunein / Select your trade --</option>
+    <option value="Carpenter (Suthar/Badhai)">🪵 Carpenter (Suthar/Badhai)</option>
+    <option value="Boat Maker">⛵ Boat Maker</option>
+    <option value="Armourer">⚔️ Armourer</option>
+    <option value="Blacksmith (Lohar)">🔨 Blacksmith (Lohar)</option>
+    <option value="Hammer and Tool Kit Maker">🔧 Hammer and Tool Kit Maker</option>
+    <option value="Locksmith">🔒 Locksmith</option>
+    <option value="Goldsmith (Sunar)">💍 Goldsmith (Sunar)</option>
+    <option value="Potter (Kumhaar)">🏺 Potter (Kumhaar)</option>
+    <option value="Sculptor / Stone Carver">🗿 Sculptor / Stone Carver</option>
+    <option value="Cobbler / Footwear Artisan">👟 Cobbler / Footwear Artisan</option>
+    <option value="Mason (Raajmistri)">🧱 Mason (Raajmistri)</option>
+    <option value="Basket / Mat / Broom Maker">🧺 Basket / Mat / Broom Maker</option>
+    <option value="Doll & Toy Maker">🪀 Doll & Toy Maker (Traditional)</option>
+    <option value="Barber (Naai)">✂️ Barber (Naai)</option>
+    <option value="Garland Maker (Malakaar)">💐 Garland Maker (Malakaar)</option>
+    <option value="Washerman (Dhobi)">👕 Washerman (Dhobi)</option>
+    <option value="Tailor (Darzi)">🧵 Tailor (Darzi)</option>
+    <option value="Fishing Net Maker">🎣 Fishing Net Maker</option>
+  </select>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar" id="statusBar">
+  ⚠️ API URL not configured. Edit the API_URL variable in the script.
+</div>
+
+<!-- CHAT AREA -->
+<div class="chat-wrap" id="chatWrap">
+  <!-- WELCOME CARD -->
+  <div class="welcome-card" id="welcomeCard">
+    <div class="welcome-icon">🔨</div>
+    <div class="welcome-title">Namaste! Main Vishwakarma Mitra hoon</div>
+    <div class="welcome-sub">
+      Main aapki madad kar sakta hoon:<br>
+      PM Vishwakarma scheme • AI tools sikhaana • Product descriptions
+    </div>
+    <div class="quick-prompts">
+      <button class="quick-btn" onclick="sendQuick('PM Vishwakarma scheme ke kya benefits hain?')">
+        🏅 PM Vishwakarma scheme ke kya benefits hain?
+      </button>
+      <button class="quick-btn" onclick="sendQuick('Mujhe ChatGPT use karna sikhao product description ke liye')">
+        🤖 ChatGPT se product description kaise likhein?
+      </button>
+      <button class="quick-btn" onclick="sendQuick('Main apply karne ke liye eligible hoon kya? Meri umar 42 hai, main kumhaar hoon')">
+        ✅ Kya main eligible hoon? (42 saal, Kumhaar)
+      </button>
+      <button class="quick-btn" onclick="sendQuick('Mere haath se bani clay keychain ke liye ek description likho')">
+        🏺 Mere clay keychain ke liye description likho
+      </button>
+      <button class="quick-btn" onclick="sendQuick('What is AI and how will it help me sell my products?')">
+        💡 What is AI and how will it help me?
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- INPUT AREA -->
+<div class="input-wrap">
+  <div class="input-row">
+    <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="Voice input (बोलकर पूछें)">🎙️</button>
+    <textarea
+      class="input-box"
+      id="inputBox"
+      placeholder="Kuch bhi poochhein... (Hindi ya English mein) / Ask anything..."
+      rows="1"
+      onkeydown="handleKey(event)"
+      oninput="autoResize(this)"
+    ></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+  </div>
+  <div class="input-hint">
+    🎙️ Voice input available · 🌐 All Indian languages supported · 🇮🇳 Powered by Claude AI + IndiaAI Mission
+  </div>
+</div>
+
+<script>
+// ── CONFIGURATION ─────────────────────────────────────────────
+// IMPORTANT: Change this to your Render URL when deployed!
+// Local:   http://localhost:8000
+// Render:  https://YOUR-APP-NAME.onrender.com
+// const API_URL = 'https://vishwakarma-agent.onrender.com';
+
+const API_URL = 'http://localhost:8000';
+//const API_URL = window.location.hostname === 'localhost'
+ // ? 'http://localhost:8000'
+  //: window.location.origin.replace(':5500', ':8000'); // adjust for your setup
+
+let selectedLang = 'auto';
+let isListening  = false;
+let recognition  = null;
+
+// ── CHECK API ON LOAD ─────────────────────────────────────────
+window.addEventListener('load', async () => {
+  try {
+    const res = await fetch(`${API_URL}/health`, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) throw new Error();
+    console.log('✅ API connected');
+  } catch {
+    document.getElementById('statusBar').classList.add('show');
+    document.getElementById('statusBar').textContent =
+      `⚠️ Cannot connect to API at ${API_URL}. Make sure the backend is running.`;
+  }
+});
+
+// ── LANGUAGE SELECTOR ─────────────────────────────────────────
+function setLang(lang, btn) {
+  selectedLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── AUTO-RESIZE TEXTAREA ──────────────────────────────────────
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ── HANDLE ENTER KEY ──────────────────────────────────────────
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+// ── SEND QUICK PROMPT ─────────────────────────────────────────
+function sendQuick(text) {
+  document.getElementById('inputBox').value = text;
+  sendMessage();
+}
+
+// ── SEND MESSAGE ──────────────────────────────────────────────
+async function sendMessage() {
+  const input   = document.getElementById('inputBox');
+  const message = input.value.trim();
+  if (!message) return;
+
+  const trade = document.getElementById('tradeSelect').value;
+
+  // Hide welcome card on first message
+  const welcomeCard = document.getElementById('welcomeCard');
+  if (welcomeCard) welcomeCard.style.display = 'none';
+
+  // Add user bubble
+  addBubble('user', message);
+  input.value = '';
+  input.style.height = 'auto';
+
+  // Show typing
+  const typingId = addTyping();
+
+  // Disable send
+  document.getElementById('sendBtn').disabled = true;
+
+  try {
+    const res = await fetch(`${API_URL}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message,
+        language: selectedLang,
+        trade: trade || null
+      })
+    });
+
+    removeTyping(typingId);
+
+    if (!res.ok) {
+      const err = await res.json();
+      addBubble('agent', `❌ Error: ${err.detail || 'Something went wrong. Please try again.'}`);
+      return;
+    }
+
+    const data = await res.json();
+    addBubble('agent', data.reply);
+
+  } catch (e) {
+    removeTyping(typingId);
+    addBubble('agent', `⚠️ Cannot reach the AI. Please check your internet connection or try again.\n\nAPI URL: ${API_URL}`);
+  } finally {
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('inputBox').focus();
+  }
+}
+
+// ── ADD CHAT BUBBLE ───────────────────────────────────────────
+function addBubble(role, text) {
+  const wrap = document.getElementById('chatWrap');
+
+  const row = document.createElement('div');
+  row.className = `msg-row ${role}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  avatar.textContent = role === 'agent' ? '🔨' : '👤';
+
+  const col = document.createElement('div');
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  // Convert newlines to <br> and preserve formatting
+  bubble.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  const time = document.createElement('div');
+  time.className = 'msg-time';
+  time.textContent = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+  col.appendChild(bubble);
+  col.appendChild(time);
+
+  row.appendChild(avatar);
+  row.appendChild(col);
+  wrap.appendChild(row);
+
+  wrap.scrollTo({ top: wrap.scrollHeight, behavior: 'smooth' });
+}
+
+// ── TYPING INDICATOR ──────────────────────────────────────────
+function addTyping() {
+  const wrap = document.getElementById('chatWrap');
+  const id   = 'typing-' + Date.now();
+
+  const row = document.createElement('div');
+  row.className = 'msg-row agent';
+  row.id = id;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  avatar.textContent = '🔨';
+
+  const typing = document.createElement('div');
+  typing.className = 'typing';
+  typing.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+
+  row.appendChild(avatar);
+  row.appendChild(typing);
+  wrap.appendChild(row);
+  wrap.scrollTo({ top: wrap.scrollHeight, behavior: 'smooth' });
+
+  return id;
+}
+
+function removeTyping(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+// ── VOICE INPUT (Web Speech API) ─────────────────────────────
+function toggleMic() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Voice input not supported in this browser. Use Chrome or Edge.');
+    return;
+  }
+
+  if (isListening) {
+    recognition && recognition.stop();
+    isListening = false;
+    document.getElementById('micBtn').classList.remove('listening');
+    return;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+
+  // Set language based on selection
+  const langMap = {
+    'auto':     'hi-IN',
+    'hindi':    'hi-IN',
+    'english':  'en-IN',
+    'marathi':  'mr-IN',
+    'tamil':    'ta-IN',
+    'telugu':   'te-IN',
+    'gujarati': 'gu-IN',
+    'bengali':  'bn-IN',
+  };
+  recognition.lang = langMap[selectedLang] || 'hi-IN';
+  recognition.continuous     = false;
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('micBtn').classList.add('listening');
+    document.getElementById('inputBox').placeholder = '🎙️ Bol rahe hain... / Listening...';
+  };
+
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    document.getElementById('inputBox').value = transcript;
+    autoResize(document.getElementById('inputBox'));
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    document.getElementById('micBtn').classList.remove('listening');
+    document.getElementById('inputBox').placeholder = 'Kuch bhi poochhein... (Hindi ya English mein) / Ask anything...';
+  };
+
+  recognition.onerror = (e) => {
+    isListening = false;
+    document.getElementById('micBtn').classList.remove('listening');
+  };
+
+  recognition.start();
+}
+</script>
+</body>
+</html>
